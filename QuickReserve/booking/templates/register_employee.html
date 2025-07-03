@@ -1,0 +1,43 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container mt-5" style="max-width: 600px;">
+    <h2 class="mb-4 text-center">Employee Registration</h2>
+    
+    <form method="post">
+        {% csrf_token %}
+        {{ form.non_field_errors }}
+        
+        <div class="mb-3">
+            {{ form.emp_name.label_tag }}
+            {{ form.emp_name }}
+            {{ form.emp_name.errors }}
+        </div>
+        
+        <div class="mb-3">
+            {{ form.emp_gmail.label_tag }}
+            {{ form.emp_gmail }}
+            {{ form.emp_gmail.errors }}
+        </div>
+        
+        <div class="mb-3">
+            {{ form.emp_phoneNumber.label_tag }}
+            {{ form.emp_phoneNumber }}
+            {{ form.emp_phoneNumber.errors }}
+        </div>
+        
+        <div class="mb-3">
+            {{ form.emp_password.label_tag }}
+            {{ form.emp_password }}
+            {{ form.emp_password.errors }}
+        </div>
+
+        <div class="mb-3">
+            {{ form.confirm_password.label_tag }}
+            {{ form.confirm_password }}
+            {{ form.confirm_password.errors }}
+        </div>
+        
+        <button type="submit" class="btn btn-primary w-100">Register</button>
+    </form>
+</div>
+{% endblock %}

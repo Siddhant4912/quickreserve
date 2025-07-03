@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>QuickReserve - Smart Conference Booking</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <!-- Bootstrap & Fonts -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+  <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+
+  <!-- Style -->
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+      background: #f7f9fc;
+      margin: 0;
+      padding: 0;
+    }
+    .navbar {
+      background: #fff;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    }
+    .hero {
+      background: rgba(255, 255, 255, 0.2);
+      backdrop-filter: blur(15px);
+      border-radius: 16px;
+      margin: 40px auto;
+      padding: 80px 40px;
+      max-width: 900px;
+      text-align: center;
+      color: #fff;
+      background-image: linear-gradient(135deg, #007BFF, #00C6FF);
+    }
+    .hero h1 {
+      font-size: 3rem;
+      font-weight: 700;
+    }
+    .btn-primary {
+      background: #fff;
+      color: #007BFF;
+      border: none;
+    }
+    .btn-primary:hover {
+      background: #e6f0ff;
+    }
+    .wave {
+      margin-top: -100px;
+    }
+    .feature-card {
+      transition: all 0.3s ease;
+      background: linear-gradient(to bottom right, #ffffff, #f1f5f9);
+      border-radius: 16px;
+      padding: 30px;
+      box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+    }
+    .feature-card:hover {
+      transform: translateY(-8px);
+      box-shadow: 0 15px 25px rgba(0,0,0,0.15);
+    }
+    .feature-icon {
+      font-size: 2.5rem;
+      margin-bottom: 15px;
+    }
+    .steps-section {
+      background: #e8f0fe;
+      padding: 60px 0;
+    }
+    footer {
+      background: #0d6efd;
+      color: white;
+      text-align: center;
+      padding: 20px 0;
+    }
+  </style>
+</head>
+
+<body>
+
+<!-- Navbar -->
+<nav class="navbar navbar-expand-lg px-4">
+  <a class="navbar-brand fw-bold text-primary" href="#">QuickReserve</a>
+  <div class="ms-auto">
+    <a href="{% url 'login' %}" class="btn btn-primary">Login</a>
+  </div>
+</nav>
+
+<!-- Hero -->
+<section class="hero" data-aos="fade-up">
+  <h1>Smart Conference Room Booking</h1>
+  <p class="lead">Say goodbye to scheduling chaos. Book your workspace in seconds.</p>
+  <a href="{% url 'login' %}" class="btn btn-light btn-lg mt-3">Start Booking</a>
+</section>
+
+<!-- Wave -->
+<div class="wave">
+  <svg viewBox="0 0 1440 320"><path fill="#f7f9fc" fill-opacity="1" d="M0,128L1440,32L1440,320L0,320Z"></path></svg>
+</div>
+
+<!-- Features -->
+<section class="container py-5 text-center">
+  <h2 class="mb-5">Why QuickReserve?</h2>
+  <div class="row g-4">
+    <div class="col-md-3" data-aos="fade-up">
+      <div class="feature-card">
+        <div class="feature-icon">🕒</div>
+        <h5>Live Availability</h5>
+        <p>Book only when rooms are truly free.</p>
+      </div>
+    </div>
+    <div class="col-md-3" data-aos="fade-up" data-aos-delay="100">
+      <div class="feature-card">
+        <div class="feature-icon">🔐</div>
+        <h5>Secure Login</h5>
+        <p>Role-based access for admins & employees.</p>
+      </div>
+    </div>
+    <div class="col-md-3" data-aos="fade-up" data-aos-delay="200">
+      <div class="feature-card">
+        <div class="feature-icon">📍</div>
+        <h5>Filter by Location</h5>
+        <p>Find nearby meeting rooms instantly.</p>
+      </div>
+    </div>
+    <div class="col-md-3" data-aos="fade-up" data-aos-delay="300">
+      <div class="feature-card">
+        <div class="feature-icon">📧</div>
+        <h5>Notifications</h5>
+        <p>Get email confirmations instantly.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Steps -->
+<section class="steps-section text-center">
+  <div class="container">
+    <h2 class="mb-4">How It Works</h2>
+    <div class="row">
+      <div class="col-md-4" data-aos="zoom-in">
+        <h4>1. Login</h4>
+        <p>Sign in securely using your credentials.</p>
+      </div>
+      <div class="col-md-4" data-aos="zoom-in" data-aos-delay="150">
+        <h4>2. View Rooms</h4>
+        <p>See what's available and filter by date/time.</p>
+      </div>
+      <div class="col-md-4" data-aos="zoom-in" data-aos-delay="300">
+        <h4>3. Book & Confirm</h4>
+        <p>Reserve your room and get notified.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Footer -->
+<footer>
+  <p>&copy; 2025 QuickReserve. Built with 💙 by Siddhant.</p>
+</footer>
+
+<!-- JS Scripts -->
+<script>
+  AOS.init();
+</script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
