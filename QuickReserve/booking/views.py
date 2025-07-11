@@ -193,7 +193,7 @@ def register_employee(request):
         send_mail(
             subject="Verify your email",
             message=f"Hello {name}, your OTP is: {otp_code}",
-            from_email="syitsd20if002@gmail.com",
+            from_email="sendermail@gmail.com",
             recipient_list=[gmail]
         )
 
