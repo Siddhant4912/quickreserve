@@ -1,8 +1,11 @@
+from datetime import timedelta
+import random
+import string
 from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin, BaseUserManager
 from django.db import models
 from phonenumber_field.modelfields import PhoneNumberField
-
-
+from django.utils import timezone  # ✅ Correct import
+from django.utils.crypto import get_random_string
 
 
 class RegisterEmployeeManager(BaseUserManager):
@@ -25,9 +28,8 @@ class Register_Employee(AbstractBaseUser, PermissionsMixin):
     emp_gmail = models.EmailField(unique=True)
     emp_phoneNumber = PhoneNumberField(region='IN', unique=True)
     emp_isActive = models.BooleanField(default=True)
-
     # Required by Django
-    is_staff = models.BooleanField(default=False)
+    is_admin = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
     registration_date = models.DateTimeField(auto_now_add=True)
 
@@ -43,12 +45,16 @@ class Register_Employee(AbstractBaseUser, PermissionsMixin):
 
 
 
+
+
 class Room(models.Model):
     name = models.CharField(max_length=100)
     location = models.CharField(max_length=100)
     capacity = models.PositiveIntegerField()
-    amenities = models.TextField(help_text="Comma-separated (e.g. AC, Projector)")
-
+    amenities = models.TextField(
+        default="AC, Projector",
+        help_text="Comma-separated (e.g. AC, Projector)"
+    )    # amenities = models.ManyToManyField('Equipment', blank=True)  # Use ManyToManyField for better flexibility
     def __str__(self):
         return self.name
 
@@ -72,3 +78,22 @@ class Room_Booking(models.Model):
 
     def __str__(self):
         return f"{self.meeting_title} - {self.room.name} on {self.date}"
+
+
+
+
+# otp model
+class EmailOTP(models.Model):
+    email       = models.EmailField()
+    code        = models.CharField(max_length=6)
+    created_at  = models.DateTimeField(auto_now_add=True)
+
+    def is_valid(self, submitted_code):
+        from django.utils import timezone
+        from datetime import timedelta
+        return (
+            self.code == submitted_code and
+            timezone.now() <= self.created_at + timedelta(minutes=10)
+        )
+
+

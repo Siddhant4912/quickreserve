@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container my-5" style="max-width:400px">
+  <h3 class="mb-3">Verify your email</h3>
+
+  {% for m in messages %}
+    <div class="alert alert-{{ m.tags }}">{{ m }}</div>
+  {% endfor %}
+
+  <p class="text-muted">
+    We’ve sent a 6‑digit code to <strong>{{ email }}</strong>.  
+    Enter it below to activate your account.
+  </p>
+
+  <form method="POST">
+    {% csrf_token %}
+    <input type="text" name="otp" maxlength="6" class="form-control mb-3"
+           placeholder="Enter 6‑digit code" required>
+    <button class="btn btn-primary w-100">Verify &amp; Activate</button>
+  </form>
+</div>
+{% endblock %}

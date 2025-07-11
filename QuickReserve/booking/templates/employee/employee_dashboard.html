@@ -1,0 +1,354 @@
+{% extends 'base.html' %}
+
+
+{% block content %}
+<div class="topbar d-flex flex-wrap justify-content-between align-items-center px-3 py-2">
+  <h4 class="mb-0"><i class="bi bi-building"></i> QuickReserve</h4>
+
+  <div class="d-flex flex-wrap align-items-center gap-3 mt-2 mt-md-0">
+    <a href="#" class="nav-link px-2 text-white">Dashboard</a>
+    <a href="#" class="nav-link px-2 text-white">Help</a>
+
+    <!-- Profile Circle -->
+    <div class="profile-icon d-flex align-items-center justify-content-center text-primary bg-white fw-bold"
+      style="width: 40px; height: 40px; border-radius: 50%;">
+      {{ request.session.employee_name|slice:":2"|upper }}
+    </div>
+
+    <!-- Logout Link -->
+    <a href="{% url 'logout' %}" class="nav-link px-2 text-white">Logout</a>
+  </div>
+</div>
+
+
+<!-- ✅ Messages block here -->
+<div class="container">
+  {% if messages %}
+  {% for message in messages %}
+  <div class="alert alert-{{ message.tags }} alert-dismissible fade show mt-3" role="alert">
+    {{ message }}
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+  </div>
+  {% endfor %}
+  {% endif %}
+  <div class="container my-4">
+    <div class="d-flex justify-content-between align-items-center">
+      <h3>Welcome {{ request.session.employee_name }}</h3>
+      <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#bookingModal">+ Quick Book</button>
+    </div>
+    <p>Today is {{today}}</p>
+
+    <div class="row g-4 my-4">
+      <!-- Total Bookings -->
+      <div class="col-md-4">
+        <div class="card shadow-sm border-0 p-3 h-100">
+          <div class="d-flex align-items-center justify-content-between">
+            <div>
+              <h6 class="text-muted">Total Rooms</h6>
+              <h4 class="fw-bold mb-0">{{ total_rooms }}</h4>
+            </div>
+            <div class="bg-light rounded-circle p-3">
+              <i class="bi bi-calendar fs-4 text-primary"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Available Rooms -->
+      <div class="col-md-4">
+        <div class="card shadow-sm border-0 p-3 h-100">
+          <div class="d-flex align-items-center justify-content-between">
+            <div>
+              <h6 class="text-muted">Available rooms</h6>
+              <h4 class="fw-bold mb-0">{{ available_rooms }}</h4>
+            </div>
+            <div class="bg-light rounded-circle p-3">
+              <i class="bi bi-building fs-4 text-success"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+
+
+      <div class="col-md-4">
+        <div class="card shadow-sm border-0 p-3 h-100">
+          <div class="d-flex align-items-center justify-content-between">
+            <div>
+              <h6 class="text-muted">Your Bookings</h6>
+              <h4 class="fw-bold mb-0">{{ my_bookings }}</h4>
+            </div>
+            <div class="bg-light rounded-circle p-3 ">
+              <i class="bi bi-building fs-4 text-success"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <p>Total: {{ total_rooms }} | Available: {{ available_rooms }} | Yours: {{ my_bookings }}</p>
+
+
+      <div class="card p-4 mb-4">
+       <h5>
+  {% if filter_option == "past" %}
+    Past Bookings
+  {% elif filter_option == "all" %}
+    All Bookings
+  {% else %}
+    Your Upcoming Meetings
+  {% endif %}
+</h5>
+
+
+      <form method="get" class="mb-3">
+  <select name="filter" class="form-select w-auto d-inline-block" onchange="this.form.submit()">
+    <option value="upcoming" {% if filter_option == "upcoming" %}selected{% endif %}>Upcoming</option>
+    <option value="past" {% if filter_option == "past" %}selected{% endif %}>Past</option>
+    <option value="all" {% if filter_option == "all" %}selected{% endif %}>All</option>
+  </select>
+</form>
+
+        <table class="table mt-3">
+          <thead>
+            <tr>
+              <th>Meeting</th>
+              <th>Room</th>
+              <th>Date</th>
+              <th>Time</th>
+              <th>Amenities</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for booking in bookings %}
+            <tr>
+
+              <td>
+                {{ booking.meeting_title }}<br>
+                <small>{{ booking.participants }} participant{{ booking.participants|pluralize }}</small>
+              </td>
+              <td><span class="badge bg-success">{{ booking.room.name }}</span></td>
+              <td>{{ booking.date }}</td>
+              <td>{{ booking.start_time }} - {{ booking.end_time }}</td>
+              <td>
+                {% for e in booking.equipment.all %}
+                <span class="badge bg-info text-dark">{{ e.name }}</span>
+                {% empty %}
+                <small class="text-muted">No equipment</small>
+                {% endfor %}
+              </td>
+
+              <td>
+                {% if booking.date >= today %}
+                <a class="text-decoration-none edit-booking " href="#" data-bs-toggle="modal"
+                  data-bs-target="#bookingModal" data-id="{{ booking.id }}" data-title="{{ booking.meeting_title }}"
+                  data-room="{{ booking.room.id }}" data-date="{{ booking.date|date:'Y-m-d' }}"
+                  data-start="{{ booking.start_time|time:'H:i' }}" data-end="{{ booking.end_time|time:'H:i' }}"
+                  data-participants="{{ booking.participants }}"
+                  data-equipment="{% for e in booking.equipment.all %}{{ e.name }}{% if not forloop.last %},{% endif %}{% endfor %}">
+                  ✏️
+                </a>
+                <a class="text-decoration-none" href="{% url 'delete_booking' booking.id %}"
+                  onclick="return confirm('Are you sure you want to delete this booking?')">🗑️</a>
+                {% else %}
+                <span class="text-muted">Past</span>
+                {% endif %}
+              </td>
+
+
+            </tr>
+            {% empty %}
+            <tr>
+              <td colspan="6" class="text-center text-muted">No bookings found.</td>
+            </tr>
+            {% endfor %}
+
+
+
+          </tbody>
+
+        </table>
+
+
+
+      </div>
+  <!-- Bootstrap Modal -->
+  <div class="modal fade" id="bookingModal" tabindex="-1" aria-labelledby="bookingModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+      <div class="modal-content p-3">
+        <div class="modal-header">
+          <h5 class="modal-title" id="bookingModalLabel">Quick Room Booking</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+
+        <form method="POST" action="{% url 'booking_form' %}">
+          {% csrf_token %}
+          <div class="modal-body">
+            <input type="hidden" name="booking_id" id="inputBookingId">
+            <div class="row g-3">
+              <div class="col-md-6">
+                <label class="form-label">Meeting Title</label>
+                <input type="text" id="inputTitle" class="form-control" name="meeting_title" required>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">Room</label>
+                <select id="inputRoom" class="form-select" name="room" required>
+                  <option value="">Select Room</option>
+                  {% for r in rooms %}
+                  <option value="{{ r.id }}">{{ r.name }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">Date</label>
+                <input type="date" id="inputDate" class="form-control" name="date" required
+                  min="{{ today|date:'Y-m-d' }}">
+              </div>
+              <div class="col-md-3">
+                <label class="form-label">Start Time</label>
+                <input type="time" id="inputStart" class="form-control" name="start_time" required>
+              </div>
+              <div class="col-md-3">
+                <label class="form-label">End Time</label>
+                <input type="time" id="inputEnd" class="form-control" name="end_time" required>
+              </div>
+
+              <!-- 🔻 Add this right below -->
+              <div class="col-12">
+                <div id="disabledSlots" class="text-danger small mt-1"></div>
+              </div>
+
+              <div class="col-12">
+                <label class="form-label">Participants</label>
+                <input type="number" id="inputParticipants" class="form-control" name="participants" min="1" required>
+              </div>
+              <div class="col-12">
+                <label class="form-label">Select Amenities</label><br>
+                {% for e in equipment %}
+                <div class="form-check form-check-inline">
+                  <input class="form-check-input" type="checkbox" name="amenities" value="{{ e.name }}"
+                    id="amenity{{ forloop.counter }}">
+                  <label class="form-check-label" for="amenity{{ forloop.counter }}">{{ e.name }}</label>
+                </div>
+                {% endfor %}
+              </div>
+            </div>
+          </div>
+
+          <div class="modal-footer">
+            <button type="submit" class="btn btn-primary w-100">Book Room</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+
+
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    document.querySelectorAll('.edit-booking').forEach(button => {
+      button.addEventListener('click', function () {
+        // Set form fields
+        document.getElementById('inputBookingId').value = this.dataset.id;
+        document.getElementById('inputTitle').value = this.dataset.title;
+        document.getElementById('inputRoom').value = this.dataset.room;
+        document.getElementById('inputDate').value = this.dataset.date;
+
+        // 🛠 Format time correctly if needed
+        document.getElementById('inputStart').value = this.dataset.start.slice(0, 5);
+        document.getElementById('inputEnd').value = this.dataset.end.slice(0, 5);
+        document.getElementById('inputParticipants').value = this.dataset.participants;
+
+        // Uncheck all amenities
+        document.querySelectorAll('input[name="amenities"]').forEach(cb => cb.checked = false);
+
+        // ✅ Now check the correct amenities
+        const equipmentList = this.dataset.equipment.split(',');
+        equipmentList.forEach(item => {
+          const checkbox = document.querySelector(`input[name="amenities"][value="${item.trim()}"]`);
+          if (checkbox) checkbox.checked = true;
+        });
+
+        // ✅ Change button text
+        document.querySelector('#bookingModal button[type="submit"]').textContent = "Update Booking";
+      });
+    });
+
+    // Optional: reset button text on modal close
+    const modal = document.getElementById('bookingModal');
+    modal.addEventListener('hidden.bs.modal', () => {
+      document.querySelector('#bookingModal button[type="submit"]').textContent = "Book Room";
+      document.getElementById('inputBookingId').value = ""; // reset ID
+    });
+
+
+
+
+    // ✅ Time Slot Conflict Detection (Improved)
+    const inputDate = document.getElementById('inputDate');
+    const inputRoom = document.getElementById('inputRoom');
+    const startTime = document.getElementById('inputStart');
+    const endTime = document.getElementById('inputEnd');
+    const disabledSlotsDiv = document.getElementById('disabledSlots');
+
+    let isClashing = false;
+    function fetchBookedSlots() {
+  const roomId = inputRoom.value;
+  const date = inputDate.value;
+
+  if (roomId && date) {
+    fetch(`/api/booked-slots/?room_id=${roomId}&date=${date}`)
+      .then(response => response.json())
+      .then(data => {
+        const currentStart = startTime.value;
+        const currentEnd = endTime.value;
+
+        isClashing = false;
+        let disabledHTML = '';
+
+        data.slots.forEach(slot => {
+          disabledHTML += `<div>⛔ ${slot.start} - ${slot.end}</div>`;
+          if (
+            (currentStart >= slot.start && currentStart < slot.end) ||
+            (currentEnd > slot.start && currentEnd <= slot.end) ||
+            (currentStart <= slot.start && currentEnd >= slot.end)
+          ) {
+            isClashing = true;
+          }
+        });
+
+        disabledSlotsDiv.innerHTML = disabledHTML;
+
+        if (isClashing) {
+          startTime.style.backgroundColor = 'red';
+          endTime.style.backgroundColor = 'red';
+        } else {
+          startTime.style.backgroundColor = '';
+          endTime.style.backgroundColor = '';
+        }
+      });
+  }
+}
+
+
+document.querySelector('#bookingModal form').addEventListener('submit', function (e) {
+  if (isClashing) {
+    e.preventDefault(); // stop form submission
+    alert("❌ Please select a different time slot. This one is already booked!");
+
+    // Clear time fields
+    document.getElementById('inputStart').value = '';
+    document.getElementById('inputEnd').value = '';
+    startTime.style.backgroundColor = '';
+    endTime.style.backgroundColor = '';
+  }
+});
+
+    inputDate.addEventListener('change', fetchBookedSlots);
+    inputRoom.addEventListener('change', fetchBookedSlots);
+    startTime.addEventListener('change', fetchBookedSlots);
+    endTime.addEventListener('change', fetchBookedSlots);
+  </script>
+
+  {% endblock %}

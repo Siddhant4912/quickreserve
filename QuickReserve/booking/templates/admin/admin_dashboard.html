@@ -1,0 +1,485 @@
+{% extends 'base.html' %}
+
+
+{% block content %}
+<div class="topbar d-flex flex-wrap justify-content-between align-items-center px-3 py-2">
+  <h4 class="mb-0"><i class="bi bi-building"></i> QuickReserve</h4>
+
+  <div class="d-flex flex-wrap align-items-center gap-3 mt-2 mt-md-0">
+    <a href="#" class="nav-link px-2 text-white">Dashboard</a>
+    <a href="#" class="nav-link px-2 text-white">Help</a>
+
+    <!-- Profile Circle -->
+    <div class="profile-icon d-flex align-items-center justify-content-center text-primary bg-white fw-bold"
+      style="width: 40px; height: 40px; border-radius: 50%;">
+      {{ request.session.employee_name|slice:":2"|upper }}
+    </div>
+
+    <!-- Logout Link -->
+    <a href="{% url 'logout' %}" class="nav-link px-2 text-white">Logout</a>
+  </div>
+</div>
+
+
+<!-- ✅ Messages block here -->
+<div class="container">
+  {% if messages %}
+  {% for message in messages %}
+  <div class="alert alert-{{ message.tags }} alert-dismissible fade show mt-3" role="alert">
+    {{ message }}
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+  </div>
+  {% endfor %}
+  {% endif %}
+  <div class="container my-4">
+    <div class="d-flex justify-content-between align-items-center">
+      <h3>Welcome {{ request.session.employee_name }}</h3>
+
+    </div>
+    <p>Today is {{today}}</p>
+
+    <div class="row g-4 my-4">
+      <!-- Total Bookings -->
+      <div class="col-md-4">
+        <div class="card shadow-sm border-0 p-3 h-100">
+          <div class="d-flex align-items-center justify-content-between">
+            <div>
+              <h6 class="text-muted">Total Rooms</h6>
+              <h4 class="fw-bold mb-0">{{ total_rooms }}</h4>
+            </div>
+            <div class="bg-light rounded-circle p-3">
+              <i class="bi bi-calendar fs-4 text-primary"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Available Rooms -->
+      <div class="col-md-4">
+        <div class="card shadow-sm border-0 p-3 h-100">
+          <div class="d-flex align-items-center justify-content-between">
+            <div>
+              <h6 class="text-muted">total_amenities</h6>
+              <h4 class="fw-bold mb-0">{{ total_amenities }}</h4>
+            </div>
+            <div class="bg-light rounded-circle p-3">
+              <i class="bi bi-building fs-4 text-success"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+
+
+      <div class="col-md-4">
+        <div class="card shadow-sm border-0 p-3 h-100">
+          <div class="d-flex align-items-center justify-content-between">
+            <div>
+              <h6 class="text-muted">Total Bookings</h6>
+              <h4 class="fw-bold mb-0">{{ total_bookings }}</h4>
+            </div>
+            <div class="bg-light rounded-circle p-3 ">
+              <i class="bi bi-building fs-4 text-success"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+
+
+      <div class="card p-4 mb-2">
+  <div class="d-flex justify-content-center mb-3">
+    <!-- Add Room and Amenities buttons -->
+    <button class="btn btn-primary me-3" data-bs-toggle="modal" data-bs-target="#bookingModal">+ Add Room</button>
+    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addAmenitiesModal">+ Add Amenity</button>
+  </div>
+
+  <!-- Section title based on filter -->
+  <h5 class="text-center">
+    {% if filter_option == "past" %}
+      Past Bookings
+    {% elif filter_option == "all" %}
+      All Bookings
+    {% elif filter_option == "rooms" %}
+      Rooms
+    {% elif filter_option == "amenities" %}
+      Amenities
+    {% else %}
+       Upcoming bookings
+    {% endif %}
+  </h5>
+
+  <!-- Filter dropdown -->
+  <form method="get" class="mb-3 text-center">
+    <select name="filter" class="form-select w-auto d-inline-block" onchange="this.form.submit()">
+      <option value="upcoming" {% if filter_option == "upcoming" %}selected{% endif %}>Upcoming</option>
+      <option value="past" {% if filter_option == "past" %}selected{% endif %}>Past</option>
+      <option value="all" {% if filter_option == "all" %}selected{% endif %}>All Bookings</option>
+      <option value="rooms" {% if filter_option == "rooms" %}selected{% endif %}>Rooms</option>
+      <option value="amenities" {% if filter_option == "amenities" %}selected{% endif %}>Amenities</option>
+    </select>
+  </form>
+
+  {% if employee_bookings %}
+  <!-- Bookings Table -->
+  <table class="table mt-3">
+    <thead>
+      <tr>
+        <th>Meeting</th>
+        <th>Room</th>
+        <th>Date</th>
+        <th>Time</th>
+        <th>Amenities</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for booking in employee_bookings %}
+      <tr>
+        <td>
+          {{ booking.meeting_title }}<br>
+          <small>{{ booking.participants }} participant{{ booking.participants|pluralize }}</small>
+        </td>
+        <td><span class="badge bg-success">{{ booking.room.name }}</span></td>
+        <td>{{ booking.date }}</td>
+        <td>{{ booking.start_time }} - {{ booking.end_time }}</td>
+        <td>
+          {% for e in booking.equipment.all %}
+            <span class="badge bg-info text-dark">{{ e.name }}</span>
+          {% empty %}
+            <small class="text-muted">No equipment</small>
+          {% endfor %}
+        </td>
+   
+      </tr>
+      {% empty %}
+      <tr>
+        <td colspan="6" class="text-center text-muted">No bookings found.</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  {% elif show_rooms %}
+  <h4 class="mb-3">All Rooms</h4>
+  <table class="table mt-3 table-bordered shadow-sm">
+    <thead class="table-light">
+      <tr>
+        <th>Sr.No</th>
+        <th>Room Name</th>
+        <th>Capacity</th>
+        <th>Amenities</th>
+        <th>Action</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for room in rooms %}
+      <tr>
+        <td>{{ forloop.counter }}</td>
+        <td>{{ room.name }}</td>
+        <td>{{ room.capacity }}</td>
+        <td>{{ room.amenities }}</td>
+        <td>
+      <a class="text-decoration-none edit-room" href="#" 
+   data-bs-toggle="modal" 
+   data-bs-target="#bookingModal" 
+   data-id="{{ room.id }}" 
+   data-room="{{ room.name }}" 
+   data-title="{{ room.location }}" 
+   data-participants="{{ room.capacity }}"
+   data-equipment="{% for e in room.equipment.all %}{{ e.id }}{% if not forloop.last %}, {% endif %}{% endfor %}">
+  ✏️ Edit
+</a>
+
+        <a href="#" class="text-danger delete-room" data-id="{{ room.id }}">🗑️</a>
+
+     
+        </td>
+      </tr>
+      {% empty %}
+      <tr>
+        <td colspan="5" class="text-center text-muted">No rooms found.</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  {% elif show_amenities %}
+<h4 class="mb-3">Available Amenities</h4>
+
+<div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 g-4">
+  {% for amenity in amenities %}
+  <div class="col">
+    <div class="card shadow-sm h-100">
+      <div class="card-body">
+        <h5 class="card-title text-primary">{{ amenity.name }}</h5>
+        {% if amenity.description %}
+          <p class="card-text text-muted">{{ amenity.description }}</p>
+        {% else %}
+          <p class="card-text text-muted">No description available.</p>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+  {% empty %}
+  <div class="col">
+    <div class="alert alert-info w-100 text-center">No amenities available.</div>
+  </div>
+  {% endfor %}
+
+  {% elif show_amenities %}
+  <!-- Amenities List -->
+  <ul class="list-group">
+    {% for a in amenities %}
+    <li class="list-group-item">{{ a.name }}</li>
+    {% endfor %}
+  </ul>
+  {% endif %}
+</div>
+
+      <!-- Bootstrap Modal -->
+      <div class="modal fade" id="bookingModal" tabindex="-1" aria-labelledby="bookingModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+          <div class="modal-content p-3">
+            <div class="modal-header">
+              <h5 class="modal-title" id="bookingModalLabel">Quick Room Booking</h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+
+            <form id="add-room-form" method="POST">
+              {% csrf_token %}
+              <div id="form-errors"></div>
+              <div class="modal-body">
+                <input type="hidden" name="room_id" id="inputRoomId">
+                <div class="row g-3">
+                  <div class="col-md-6">
+                    <label class="form-label">Room Name</label>
+                    <input type="text" id="inputRoomName" class="form-control" name="roomName" required>
+                  </div>
+                  <div class="col-md-6">
+                    <label class="form-label">Room Location </label>
+                    <input type="text" id="inputRoomLocation" class="form-control" name="roomLocation" required>
+                  </div>
+                  <div class="col-12">
+                    <label class="form-label">Participant</label>
+                    <input type="number" id="inputCapacity" class="form-control" name="capacity" min="1" required>
+                  </div>
+                  <div class="col-12">
+                    <label class="form-label">Select Amenities</label><br>
+                    {% for e in amenities %}
+                    <div class="form-check form-check-inline">
+                      <input class="form-check-input" type="checkbox" name="amenities" value="{{ e.id }}">
+                      <label class="form-check-label" for="amenity{{ forloop.counter }}">{{ e.name }}</label>
+                    </div>
+                    {% endfor %}
+
+                  </div>
+                </div>
+              </div>
+
+              <div class="modal-footer">
+                <button type="submit" class="btn btn-primary w-100">Book Room</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+
+
+
+      <!-- ✅ Add Amenities Modal -->
+      <div class="modal fade" id="addAmenitiesModal" tabindex="-1" aria-labelledby="addAmenitiesModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+          <div class="modal-content p-3">
+            <div class="modal-header">
+              <h5 class="modal-title" id="addAmenitiesModalLabel">Add New Amenity</h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+
+            <div id="amenity-form-errors"></div> <!-- ✅ error messages will appear here -->
+
+            <form method="POST" action="{% url 'add_amenity' %}" id="add-amenity-form"> <!-- ✅ ID added here -->
+              {% csrf_token %}
+              <div class="modal-body">
+                <label for="amenityName" class="form-label">Amenity Name</label>
+                <input type="text" name="name" id="amenityName" class="form-control" required>
+              </div>
+              <div class="modal-footer">
+                <button type="submit" class="btn btn-success w-100">Add Amenity</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+
+
+
+
+      <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+      <script>
+
+        function getCookie(name) {
+  let cookieValue = null;
+  if (document.cookie && document.cookie !== '') {
+    const cookies = document.cookie.split(';');
+    for (let cookie of cookies) {
+      cookie = cookie.trim();
+      if (cookie.substring(0, name.length + 1) === (name + '=')) {
+        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+        break;
+      }
+    }
+  }
+  return cookieValue;
+}
+const csrftoken = getCookie('csrftoken');
+
+        // ✅ Handle room delete
+document.addEventListener('DOMContentLoaded', function () {
+  document.querySelectorAll('.delete-room').forEach(button => {
+    button.addEventListener('click', function (e) {
+      e.preventDefault();
+
+      if (confirm("Are you sure you want to delete this room?")) {
+        const roomId = this.dataset.id;
+
+        fetch(`/delete-room/${roomId}/`, {
+  method: "POST",
+  headers: {
+    'X-Requested-With': 'XMLHttpRequest',
+    'X-CSRFToken': csrftoken  // ✅ Add CSRF token header
+  }
+})
+        .then(res => res.json())
+        .then(data => {
+          if (data.success) {
+            alert("Room deleted successfully.");
+            location.reload();
+          } else {
+            alert(data.error || "Could not delete the room.");
+          }
+        })
+        .catch(err => {
+          console.error('Delete failed:', err);
+          alert("An error occurred. Please try again.");
+        });
+      }
+    });
+  });
+});
+
+  document.addEventListener('DOMContentLoaded', function () {
+  const form = document.getElementById('add-room-form');
+  const modalElement = document.getElementById('bookingModal');
+  const modal = bootstrap.Modal.getInstance(modalElement) || new bootstrap.Modal(modalElement);
+
+  // ✅ Edit button handler
+  document.querySelectorAll('.edit-room').forEach(button => {
+    button.addEventListener('click', function () {
+      document.getElementById('inputRoomId').value = this.dataset.id;
+      document.getElementById('inputRoomName').value = this.dataset.room;
+      document.getElementById('inputRoomLocation').value = this.dataset.title;
+      document.getElementById('inputCapacity').value = this.dataset.participants;
+
+      document.querySelectorAll('input[name="amenities"]').forEach(cb => cb.checked = false);
+      const equipmentList = this.dataset.equipment.split(',');
+      equipmentList.forEach(item => {
+        const trimmed = item.trim();
+        if (trimmed !== "") {
+          const checkbox = document.querySelector(`input[name="amenities"][value="${trimmed}"]`);
+          if (checkbox) checkbox.checked = true;
+        }
+      });
+
+      document.querySelector('#bookingModal button[type="submit"]').textContent = "Update Room";
+    });
+  });
+
+  // ✅ Reset modal on close
+  modalElement.addEventListener('hidden.bs.modal', () => {
+    document.getElementById('add-room-form').reset();
+    document.getElementById('inputRoomId').value = "";
+    document.querySelector('#bookingModal button[type="submit"]').textContent = "Book Room";
+    document.getElementById('form-errors').innerHTML = '';
+  });
+
+  // ✅ Submit room form (add/edit)
+  form.addEventListener('submit', function (e) {
+    e.preventDefault();
+    const formData = new FormData(form);
+
+    fetch("{% url 'add_room' %}", {
+      method: "POST",
+      body: formData,
+      headers: { 'X-Requested-With': 'XMLHttpRequest' }
+    })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          modal.hide();
+          document.body.classList.remove('modal-open');
+          document.body.style = '';
+          document.querySelectorAll('.modal-backdrop').forEach(el => el.remove());
+
+          form.reset();
+          document.getElementById('form-errors').innerHTML = '';
+
+          alert(data.updated ? 'Room updated successfully!' : 'Room added successfully!');
+          location.reload(); // Optional: reload page to reflect changes
+        } else {
+          document.getElementById('form-errors').innerHTML = data.errors || '<div class="alert alert-danger">Something went wrong.</div>';
+        }
+      })
+      .catch(error => {
+        console.error('Error submitting room form:', error);
+        document.getElementById('form-errors').innerHTML = '<div class="alert alert-danger">Unexpected error occurred. Please try again.</div>';
+      });
+  });
+});
+
+
+
+
+
+        // amenities
+        document.addEventListener('DOMContentLoaded', function () {
+          const amenityForm = document.getElementById('add-amenity-form');
+
+          amenityForm.addEventListener('submit', function (e) {
+            e.preventDefault();
+
+            const formData = new FormData(amenityForm);
+
+            fetch("{% url 'add_amenity' %}", {
+              method: 'POST',
+              body: formData,
+              headers: { 'X-Requested-With': 'XMLHttpRequest' }
+            })
+              .then(res => res.json())
+              .then(data => {
+                if (data.success) {
+                  const modalElement = document.getElementById('addAmenitiesModal');
+                  const modal = bootstrap.Modal.getInstance(modalElement);
+                  modal.hide();
+
+                  // ✅ FIX: Remove backdrop and unfreeze body
+                  document.body.classList.remove('modal-open');
+                  document.body.style = '';
+                  document.querySelectorAll('.modal-backdrop').forEach(el => el.remove());
+
+                  // ✅ Reset form and show message
+                  amenityForm.reset();
+                  document.getElementById('amenity-form-errors').innerHTML = '';
+                  alert('Amenity added successfully!');
+                } else {
+                  document.getElementById('amenity-form-errors').innerHTML = data.errors;
+                }
+              })
+              .catch(err => {
+                document.getElementById('amenity-form-errors').innerHTML = `<div class="alert alert-danger">Something went wrong</div>`;
+                console.error('Error:', err);
+              });
+          });
+        });
+
+      </script>
+
+      {% endblock %}

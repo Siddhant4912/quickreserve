@@ -1,0 +1,32 @@
+<h2 class="text-xl font-semibold mb-4">Add New Room</h2>
+
+<form id="add-room-form" method="POST">
+  {% csrf_token %}
+  {{ form.as_p }}
+  <button type="submit" class="bg-indigo-600 text-white px-4 py-2 rounded">Save Room</button>
+</form>
+<!-- 
+<script>
+  document.getElementById('add-room-form').addEventListener('submit', function (e) {
+    e.preventDefault();
+
+    const formData = new FormData(this);
+
+    fetch("{% url 'add_room_submit' %}", {
+      method: 'POST',
+      body: formData,
+      headers: {
+        'X-Requested-With': 'XMLHttpRequest'
+      }
+    })
+    .then(response => response.text())
+    .then(html => {
+      if (html.includes('<form')) {
+        document.getElementById('add-room-modal-content').innerHTML = html;
+      } else {
+        document.getElementById('add-room-modal').classList.add('hidden');
+        document.getElementById('room-container').innerHTML = html;
+      }
+    });
+  });
+</script> -->
