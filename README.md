@@ -41,7 +41,7 @@ password = 123
 
 - **Backend**: Django (Python)
 - **Frontend**: HTML, Bootstrap 5, JavaScript (AJAX)
-- **Database**: SQLite (default) or PostgreSQL
+- **Database**: MySql
 - **Authentication**: Django session login with **email-based validation**
 - **Security**: CSRF protection, clean form handling, secure access control
 
