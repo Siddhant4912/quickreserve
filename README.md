@@ -50,7 +50,6 @@ password = 123
 ### 1. Clone the Repository
 
 ```bash
--- git clone https://github.com/yourusername/quickreserve.git
 -- cd quickreserve
 2. Create Virtual Environment
 
@@ -67,14 +66,7 @@ pip install -r requirements.txt
 
 python manage.py migrate
 python manage.py runserver
-📂 Project Structure
 
-quickreserve/
-├── rooms/               # Core app: Rooms, Amenities, Bookings
-├── templates/           # All HTML templates (admin + employee)
-├── static/              # Bootstrap, JS, icons
-├── manage.py
-└── requirements.txt
 
 
 📧 Email Authentication Flow
