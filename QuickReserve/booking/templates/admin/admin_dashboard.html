@@ -2,23 +2,31 @@
 
 
 {% block content %}
-<div class="topbar d-flex flex-wrap justify-content-between align-items-center px-3 py-2">
-  <h4 class="mb-0"><i class="bi bi-building"></i> QuickReserve</h4>
+<nav class="navbar navbar-expand-md custom-navbar px-3 py-2">
+  <div class="container-fluid">
+    <a class="navbar-brand fw-bold d-flex align-items-center text-white" href="#">
+      <i class="bi bi-building me-2"></i> QuickReserve Admin
+    </a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#adminNavbar"
+      aria-controls="adminNavbar" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
 
-  <div class="d-flex flex-wrap align-items-center gap-3 mt-2 mt-md-0">
-    <a href="#" class="nav-link px-2 text-white">Dashboard</a>
-    <a href="#" class="nav-link px-2 text-white">Help</a>
-
-    <!-- Profile Circle -->
-    <div class="profile-icon d-flex align-items-center justify-content-center text-primary bg-white fw-bold"
-      style="width: 40px; height: 40px; border-radius: 50%;">
-      {{ request.session.employee_name|slice:":2"|upper }}
+    <div class="collapse navbar-collapse" id="adminNavbar">
+      <ul class="navbar-nav ms-auto align-items-center gap-2">
+        <li class="nav-item">
+          <a class="nav-link text-white" href="#">Dashboard</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link text-white" href="#">Settings</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link text-white" href="{% url 'logout' %}">Logout</a>
+        </li>
+      </ul>
     </div>
-
-    <!-- Logout Link -->
-    <a href="{% url 'logout' %}" class="nav-link px-2 text-white">Logout</a>
   </div>
-</div>
+</nav>
 
 
 <!-- ✅ Messages block here -->
@@ -85,57 +93,70 @@
       </div>
 
 
-      <div class="card p-4 mb-2">
-  <div class="d-flex justify-content-center mb-3">
-    <!-- Add Room and Amenities buttons -->
-    <button class="btn btn-primary me-3" data-bs-toggle="modal" data-bs-target="#bookingModal">+ Add Room</button>
-    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addAmenitiesModal">+ Add Amenity</button>
-  </div>
+     <div class="card p-4 mb-2">
+  <!-- 🔄 Flex row: Add buttons on left, filter on right -->
+  <div class="d-flex justify-content-between align-items-center flex-wrap mb-3">
+   
 
-  <!-- Section title based on filter -->
+    <!-- Right: Filter dropdown -->
+    <form method="get" class="text-end">
+      <select name="filter" class="form-select" onchange="this.form.submit()">
+        <option value="upcoming" {% if filter_option == "upcoming" %}selected{% endif %}>Upcoming</option>
+        <option value="past" {% if filter_option == "past" %}selected{% endif %}>Past</option>
+        <option value="all" {% if filter_option == "all" %}selected{% endif %}>All Bookings</option>
+        <option value="rooms" {% if filter_option == "rooms" %}selected{% endif %}>Rooms</option>
+        <option value="amenities" {% if filter_option == "amenities" %}selected{% endif %}>Amenities</option>
+      </select>
+    </form>
+
+    
+  <!-- Section title -->
   <h5 class="text-center">
     {% if filter_option == "past" %}
       Past Bookings
     {% elif filter_option == "all" %}
       All Bookings
     {% elif filter_option == "rooms" %}
-      Rooms
+      Rooms 
     {% elif filter_option == "amenities" %}
       Amenities
     {% else %}
-       Upcoming bookings
+      Upcoming bookings
     {% endif %}
   </h5>
 
-  <!-- Filter dropdown -->
-  <form method="get" class="mb-3 text-center">
-    <select name="filter" class="form-select w-auto d-inline-block" onchange="this.form.submit()">
-      <option value="upcoming" {% if filter_option == "upcoming" %}selected{% endif %}>Upcoming</option>
-      <option value="past" {% if filter_option == "past" %}selected{% endif %}>Past</option>
-      <option value="all" {% if filter_option == "all" %}selected{% endif %}>All Bookings</option>
-      <option value="rooms" {% if filter_option == "rooms" %}selected{% endif %}>Rooms</option>
-      <option value="amenities" {% if filter_option == "amenities" %}selected{% endif %}>Amenities</option>
-    </select>
-  </form>
+     <!-- Left: Add buttons -->
+    <div class="d-flex flex-wrap gap-2">
+      <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#bookingModal">+ Add Room</button>
+      <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addAmenitiesModal">+ Add Amenity</button>
+    </div>
+  </div>
+
 
   {% if employee_bookings %}
   <!-- Bookings Table -->
-  <table class="table mt-3">
-    <thead>
+  <div class="table-responsive">
+  <table class="table table-striped table-hover table-bordered align-middle text-nowrap">
+    <thead class="table-primary">
       <tr>
+        <th>Sr. No</th>
+        <th>Employee Name</th>
         <th>Meeting</th>
         <th>Room</th>
         <th>Date</th>
         <th>Time</th>
         <th>Amenities</th>
+        <th>Contact</th>
       </tr>
     </thead>
     <tbody>
       {% for booking in employee_bookings %}
       <tr>
+        <td>{{ forloop.counter }}</td>
+        <td>{{ booking.employee.emp_name }}</td>
         <td>
           {{ booking.meeting_title }}<br>
-          <small>{{ booking.participants }} participant{{ booking.participants|pluralize }}</small>
+          <small class="text-muted">{{ booking.participants }} participant{{ booking.participants|pluralize }}</small>
         </td>
         <td><span class="badge bg-success">{{ booking.room.name }}</span></td>
         <td>{{ booking.date }}</td>
@@ -147,23 +168,27 @@
             <small class="text-muted">No equipment</small>
           {% endfor %}
         </td>
-   
+        <td>
+          <div><strong>Gmail:</strong> {{ booking.employee.emp_gmail }}</div>
+          <div><strong>Phone:</strong> {{ booking.employee.emp_phoneNumber }}</div>
+        </td>
       </tr>
       {% empty %}
       <tr>
-        <td colspan="6" class="text-center text-muted">No bookings found.</td>
+        <td colspan="8" class="text-center text-muted">No bookings found.</td>
       </tr>
       {% endfor %}
     </tbody>
   </table>
+</div>
 
   {% elif show_rooms %}
-  <h4 class="mb-3">All Rooms</h4>
   <table class="table mt-3 table-bordered shadow-sm">
     <thead class="table-light">
       <tr>
         <th>Sr.No</th>
         <th>Room Name</th>
+        <th>Location</th>
         <th>Capacity</th>
         <th>Amenities</th>
         <th>Action</th>
@@ -174,6 +199,7 @@
       <tr>
         <td>{{ forloop.counter }}</td>
         <td>{{ room.name }}</td>
+        <td>{{ room.location }}</td>
         <td>{{ room.capacity }}</td>
         <td>{{ room.amenities }}</td>
         <td>
@@ -207,22 +233,35 @@
 <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 g-4">
   {% for amenity in amenities %}
   <div class="col">
-    <div class="card shadow-sm h-100">
+    <div class="card shadow-sm h-100 amenity-card" data-id="{{ amenity.id }}">
       <div class="card-body">
-        <h5 class="card-title text-primary">{{ amenity.name }}</h5>
-        {% if amenity.description %}
-          <p class="card-text text-muted">{{ amenity.description }}</p>
-        {% else %}
-          <p class="card-text text-muted">No description available.</p>
-        {% endif %}
+        <h5 class="card-title text-primary amenity-name">{{ amenity.name }}</h5>
+
+        <div class="d-flex justify-content-between mt-3">
+          <!-- ✏️ Edit Button -->
+          <button class="btn btn-sm btn-outline-primary edit-amenity"
+                  data-id="{{ amenity.id }}"
+                  data-name="{{ amenity.name }}"
+                  data-bs-toggle="modal"
+                  data-bs-target="#addAmenitiesModal">
+            ✏️ Edit
+          </button>
+
+          <!-- 🗑️ Delete Button -->
+          <button class="btn btn-sm btn-outline-danger delete-amenity"
+        data-id="{{ amenity.id }}">
+  🗑️ Delete
+</button>
+        </div>
       </div>
     </div>
   </div>
-  {% empty %}
+{% empty %}
   <div class="col">
     <div class="alert alert-info w-100 text-center">No amenities available.</div>
   </div>
-  {% endfor %}
+{% endfor %}
+
 
   {% elif show_amenities %}
   <!-- Amenities List -->
@@ -268,6 +307,7 @@
                       <input class="form-check-input" type="checkbox" name="amenities" value="{{ e.id }}">
                       <label class="form-check-label" for="amenity{{ forloop.counter }}">{{ e.name }}</label>
                     </div>
+                    
                     {% endfor %}
 
                   </div>
@@ -296,16 +336,19 @@
 
             <div id="amenity-form-errors"></div> <!-- ✅ error messages will appear here -->
 
-            <form method="POST" action="{% url 'add_amenity' %}" id="add-amenity-form"> <!-- ✅ ID added here -->
-              {% csrf_token %}
-              <div class="modal-body">
-                <label for="amenityName" class="form-label">Amenity Name</label>
-                <input type="text" name="name" id="amenityName" class="form-control" required>
-              </div>
-              <div class="modal-footer">
-                <button type="submit" class="btn btn-success w-100">Add Amenity</button>
-              </div>
-            </form>
+            <form id="add-amenity-form" method="POST" action="{% url 'add_amenity' %}">
+  {% csrf_token %}
+  <input type="hidden" name="amenity_id" id="amenityId">
+  
+  <div class="modal-body">
+    <label for="amenityName" class="form-label">Amenity Name</label>
+    <input type="text" name="name" id="amenityName" class="form-control" required>
+  </div>
+
+  <div class="modal-footer">
+    <button type="submit" class="btn btn-success w-100" id="amenity-submit-btn">Add Amenity</button>
+  </div>
+</form>
           </div>
         </div>
       </div>
@@ -313,7 +356,6 @@
 
 
 
-      <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
       <script>
 
         function getCookie(name) {
@@ -440,45 +482,104 @@ document.addEventListener('DOMContentLoaded', function () {
 
 
         // amenities
-        document.addEventListener('DOMContentLoaded', function () {
-          const amenityForm = document.getElementById('add-amenity-form');
+       document.addEventListener('DOMContentLoaded', function () {
+  const amenityForm = document.getElementById('add-amenity-form');
+  const modalElement = document.getElementById('addAmenitiesModal');
+  const amenityNameInput = document.getElementById('amenityName');
+  const amenityIdInput = document.getElementById('amenityId');
+  const modalTitle = document.getElementById('addAmenitiesModalLabel');
+  const submitBtn = document.getElementById('amenity-submit-btn');
+  const errorDiv = document.getElementById('amenity-form-errors');
 
-          amenityForm.addEventListener('submit', function (e) {
-            e.preventDefault();
+  // 🟢 Edit button click: populate modal
+  document.querySelectorAll('.edit-amenity').forEach(button => {
+    button.addEventListener('click', () => {
+      amenityIdInput.value = button.dataset.id;
+      amenityNameInput.value = button.dataset.name;
 
-            const formData = new FormData(amenityForm);
+      modalTitle.textContent = 'Edit Amenity';
+      submitBtn.textContent = 'Update Amenity';
+    });
+  });
 
-            fetch("{% url 'add_amenity' %}", {
-              method: 'POST',
-              body: formData,
-              headers: { 'X-Requested-With': 'XMLHttpRequest' }
-            })
-              .then(res => res.json())
-              .then(data => {
-                if (data.success) {
-                  const modalElement = document.getElementById('addAmenitiesModal');
-                  const modal = bootstrap.Modal.getInstance(modalElement);
-                  modal.hide();
+  // 🟢 Reset modal when closed
+  modalElement.addEventListener('hidden.bs.modal', function () {
+    amenityForm.reset();
+    amenityIdInput.value = '';
+    modalTitle.textContent = 'Add New Amenity';
+    submitBtn.textContent = 'Add Amenity';
+    errorDiv.innerHTML = '';
+  });
 
-                  // ✅ FIX: Remove backdrop and unfreeze body
-                  document.body.classList.remove('modal-open');
-                  document.body.style = '';
-                  document.querySelectorAll('.modal-backdrop').forEach(el => el.remove());
+  // 🟢 Submit form (Add or Edit)
+  amenityForm.addEventListener('submit', function (e) {
+    e.preventDefault();
 
-                  // ✅ Reset form and show message
-                  amenityForm.reset();
-                  document.getElementById('amenity-form-errors').innerHTML = '';
-                  alert('Amenity added successfully!');
-                } else {
-                  document.getElementById('amenity-form-errors').innerHTML = data.errors;
-                }
-              })
-              .catch(err => {
-                document.getElementById('amenity-form-errors').innerHTML = `<div class="alert alert-danger">Something went wrong</div>`;
-                console.error('Error:', err);
-              });
-          });
-        });
+    const formData = new FormData(amenityForm);
+    const isEdit = amenityIdInput.value !== '';
+
+    fetch("{% url 'add_amenity' %}", {
+      method: 'POST',
+      body: formData,
+      headers: { 'X-Requested-With': 'XMLHttpRequest' }
+    })
+    .then(res => res.json())
+    .then(data => {
+      if (data.success) {
+        bootstrap.Modal.getInstance(modalElement).hide();
+
+        // Reset UI
+        amenityForm.reset();
+        amenityIdInput.value = '';
+        modalTitle.textContent = 'Add New Amenity';
+        submitBtn.textContent = 'Add Amenity';
+        errorDiv.innerHTML = '';
+
+        alert(isEdit ? "Amenity updated!" : "Amenity added!");
+        location.reload();  // Optional: You can use AJAX to update without reload
+      } else {
+        errorDiv.innerHTML = data.errors;
+      }
+    })
+    .catch(err => {
+      errorDiv.innerHTML = '<div class="alert alert-danger">Something went wrong.</div>';
+      console.error('Error:', err);
+    });
+  });
+});
+
+        // delete amenity
+   document.querySelectorAll('.delete-amenity').forEach(button => {
+  button.addEventListener('click', function (e) {
+    e.preventDefault();
+    if (!confirm("Are you sure you want to delete this amenity?")) return;
+
+    const amenityId = this.dataset.id;
+
+    fetch(`/admin/delete-amenity/${amenityId}/`, {
+      method: 'POST',
+      headers: {
+        'X-CSRFToken': csrftoken,
+        'X-Requested-With': 'XMLHttpRequest'
+      }
+    })
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) {
+          const card = this.closest('.amenity-card');
+          card.remove();
+          location.reload();
+          alert('Amenity deleted successfully.');
+        } else {
+          alert(data.error || 'Failed to delete amenity.');
+        }
+      })
+      .catch(error => {
+        console.error("Error deleting amenity:", error);
+        alert("Something went wrong. Please check console.");
+      });
+  });
+});
 
       </script>
 

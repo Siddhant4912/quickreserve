@@ -1,3 +1,5 @@
+{% load static %}
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -77,7 +79,7 @@
       max-width: 100%;
       border-radius: 15px;
       box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
-      animation: fadeInRight 1s ease 1s forwards;
+      animation: fadeInRight 0.5s ease 0.5s forwards;
       opacity: 0;
       transform: translateX(50px);
     }
@@ -123,6 +125,9 @@
       border-radius: 12px;
       box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
     }
+
+
+    
   </style>
 </head>
 
@@ -161,8 +166,7 @@
           <a href="{% url 'login' %}" class="btn btn-get-started btn-lg mt-4" data-bs-toggle="modal" data-bs-target="#loginModal">🚀 Get Started</a>
         </div>
         <div class="col-md-6 mt-4 mt-md-0 text-center">
-          <img src="banner.jpg" alt="Conference Room Booking">
-        </div>
+    <img src="{% static 'images/banner.jpg' %}" alt="Banner">        </div>
       </div>
     </div>
   </section>

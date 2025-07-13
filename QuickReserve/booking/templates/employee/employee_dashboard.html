@@ -2,23 +2,40 @@
 
 
 {% block content %}
-<div class="topbar d-flex flex-wrap justify-content-between align-items-center px-3 py-2">
-  <h4 class="mb-0"><i class="bi bi-building"></i> QuickReserve</h4>
+<nav class="navbar navbar-expand-md navbar-dark custom-navbar px-3 py-2">
+  <div class="container-fluid">
+    <a class="navbar-brand fw-bold d-flex align-items-center" href="#">
+      <i class="bi bi-building me-2"></i> QuickReserve
+    </a>
 
-  <div class="d-flex flex-wrap align-items-center gap-3 mt-2 mt-md-0">
-    <a href="#" class="nav-link px-2 text-white">Dashboard</a>
-    <a href="#" class="nav-link px-2 text-white">Help</a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#topbarMenu"
+      aria-controls="topbarMenu" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
 
-    <!-- Profile Circle -->
-    <div class="profile-icon d-flex align-items-center justify-content-center text-primary bg-white fw-bold"
-      style="width: 40px; height: 40px; border-radius: 50%;">
-      {{ request.session.employee_name|slice:":2"|upper }}
+    <div class="collapse navbar-collapse" id="topbarMenu">
+      <ul class="navbar-nav ms-auto align-items-center gap-2">
+        <li class="nav-item">
+          <a class="nav-link text-white" href="#">Dashboard</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link text-white" href="#">Help</a>
+        </li>
+        <li class="nav-item">
+          <div class="profile-icon d-flex align-items-center justify-content-center text-primary bg-white fw-bold"
+            style="width: 40px; height: 40px; border-radius: 50%;">
+            {{ request.session.employee_name|slice:":2"|upper }}
+          </div>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link text-white" href="{% url 'logout' %}">Logout</a>
+        </li>
+      </ul>
     </div>
-
-    <!-- Logout Link -->
-    <a href="{% url 'logout' %}" class="nav-link px-2 text-white">Logout</a>
   </div>
-</div>
+</nav>
+
+
 
 
 <!-- ✅ Messages block here -->
@@ -194,7 +211,7 @@
                 <select id="inputRoom" class="form-select" name="room" required>
                   <option value="">Select Room</option>
                   {% for r in rooms %}
-                  <option value="{{ r.id }}">{{ r.name }}</option>
+                  <option value="{{ r.id }} " data-capacity="{{ r.capacity }}">{{ r.name }}  </option>
                   {% endfor %}
                 </select>
               </div>
@@ -219,7 +236,7 @@
 
               <div class="col-12">
                 <label class="form-label">Participants</label>
-                <input type="number" id="inputParticipants" class="form-control" name="participants" min="1" required>
+                <input type="number" id="inputParticipants" class="form-control" name="participants" min="1" readonly required>
               </div>
               <div class="col-12">
                 <label class="form-label">Select Amenities</label><br>
@@ -244,8 +261,6 @@
 
 
 
-
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
   <script>
     document.querySelectorAll('.edit-booking').forEach(button => {
       button.addEventListener('click', function () {
@@ -349,6 +364,31 @@ document.querySelector('#bookingModal form').addEventListener('submit', function
     inputRoom.addEventListener('change', fetchBookedSlots);
     startTime.addEventListener('change', fetchBookedSlots);
     endTime.addEventListener('change', fetchBookedSlots);
+
+
+
+    document.addEventListener('DOMContentLoaded', function () {
+    const roomSelect = document.getElementById('inputRoom');
+    const participantsInput = document.getElementById('inputParticipants');
+
+    roomSelect.addEventListener('change', function () {
+      const selectedOption = roomSelect.options[roomSelect.selectedIndex];
+      const capacity = selectedOption.getAttribute('data-capacity');
+
+      if (capacity) {
+        participantsInput.value = capacity;       // Auto-fill value
+        participantsInput.max = capacity;         // Set max limit
+        participantsInput.placeholder = `Max: ${capacity}`;
+      } else {
+        participantsInput.value = '';
+        participantsInput.removeAttribute('max');
+        participantsInput.placeholder = '';
+      }
+    });
+  });
+
+
+  
   </script>
 
   {% endblock %}

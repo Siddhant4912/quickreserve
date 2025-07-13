@@ -151,6 +151,21 @@ def delete_room(request, room_id):
         return HttpResponseRedirect(reverse('admin_dashboard'))  # redirect to your dashboard
     except Room.DoesNotExist:
         return HttpResponseRedirect(reverse('admin_dashboard'))
+    
+
+
+from django.views.decorators.http import require_POST
+@require_POST
+def delete_amenity(request, id):
+    if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+        try:
+            amenity = Equipment.objects.get(id=id)
+            amenity.delete()
+            return JsonResponse({'success': True})
+        except Equipment.DoesNotExist:
+            return JsonResponse({'success': False, 'error': 'Amenity not found.'})
+    return JsonResponse({'success': False, 'error': 'Invalid request'})
+
 # ------------------------------
 #  REGISTRATION
 # ------------------------------
@@ -397,17 +412,46 @@ def admin_dashboard(request):
 def add_amenity(request):
     if request.method == 'POST':
         name = request.POST.get('name', '').strip()
+        amenity_id = request.POST.get('amenity_id')
 
         if not name:
-            return JsonResponse({'success': False, 'errors': '<div class="alert alert-danger">Name is required.</div>'})
+            return JsonResponse({
+                'success': False,
+                'errors': '<div class="alert alert-danger">Name is required.</div>'
+            })
 
-        if Equipment.objects.filter(name__iexact=name).exists():
-            return JsonResponse({'success': False, 'errors': '<div class="alert alert-warning">Amenity already exists.</div>'})
+        if amenity_id:
+            # 🟠 EDIT MODE
+            try:
+                amenity = Equipment.objects.get(id=amenity_id)
+                if Equipment.objects.filter(name__iexact=name).exclude(id=amenity_id).exists():
+                    return JsonResponse({
+                        'success': False,
+                        'errors': '<div class="alert alert-warning">Amenity with this name already exists.</div>'
+                    })
+                amenity.name = name
+                amenity.save()
+                return JsonResponse({'success': True, 'updated': True})
+            except Equipment.DoesNotExist:
+                return JsonResponse({
+                    'success': False,
+                    'errors': '<div class="alert alert-danger">Amenity not found.</div>'
+                })
+        else:
+            # 🟢 ADD MODE
+            if Equipment.objects.filter(name__iexact=name).exists():
+                return JsonResponse({
+                    'success': False,
+                    'errors': '<div class="alert alert-warning">Amenity already exists.</div>'
+                })
+            Equipment.objects.create(name=name)
+            return JsonResponse({'success': True})
 
-        Equipment.objects.create(name=name)
-        return JsonResponse({'success': True})
+    return JsonResponse({
+        'success': False,
+        'errors': '<div class="alert alert-danger">Invalid request.</div>'
+    })
 
-    return JsonResponse({'success': False, 'errors': '<div class="alert alert-danger">Invalid request.</div>'})
 
 #employee dashboard view
 @never_cache
